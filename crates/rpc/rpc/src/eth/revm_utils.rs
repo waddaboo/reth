@@ -102,13 +102,13 @@ pub(crate) fn get_precompiles(spec_id: &SpecId) -> Vec<reth_primitives::H160> {
             PrecompilesSpecId::BYZANTIUM
         }
         SpecId::ISTANBUL | SpecId::MUIR_GLACIER => PrecompilesSpecId::ISTANBUL,
-        SpecId::BERLIN |
-        SpecId::LONDON |
-        SpecId::ARROW_GLACIER |
-        SpecId::GRAY_GLACIER |
-        SpecId::MERGE |
-        SpecId::SHANGHAI |
-        SpecId::CANCUN => PrecompilesSpecId::BERLIN,
+        SpecId::BERLIN
+        | SpecId::LONDON
+        | SpecId::ARROW_GLACIER
+        | SpecId::GRAY_GLACIER
+        | SpecId::MERGE
+        | SpecId::SHANGHAI
+        | SpecId::CANCUN => PrecompilesSpecId::BERLIN,
         SpecId::LATEST => PrecompilesSpecId::LATEST,
     };
     Precompiles::new(spec).addresses().into_iter().map(Address::from).collect()
@@ -185,7 +185,7 @@ where
     for tx in transactions.into_iter() {
         if tx.hash() == target_tx_hash {
             // reached the target transaction
-            break
+            break;
         }
 
         tx.try_fill_tx_env(&mut evm.env.tx)?;
@@ -286,6 +286,8 @@ pub(crate) fn create_txn_env(block_env: &BlockEnv, request: CallRequest) -> EthR
         nonce,
         access_list,
         chain_id,
+        blob_versioned_hashes,
+        max_fee_per_blob_gas,
         ..
     } = request;
 
@@ -313,8 +315,8 @@ pub(crate) fn create_txn_env(block_env: &BlockEnv, request: CallRequest) -> EthR
         access_list: access_list.map(AccessList::flattened).unwrap_or_default(),
 
         // EIP-4844 fields
-        blob_hashes: Default::default(),
-        max_fee_per_blob_gas: None,
+        blob_hashes: blob_versioned_hashes,
+        max_fee_per_blob_gas,
     };
 
     Ok(env)
@@ -403,7 +405,7 @@ impl CallFees {
                         return Err(
                             // `max_priority_fee_per_gas` is greater than the `max_fee_per_gas`
                             RpcInvalidTransactionError::TipAboveFeeCap.into(),
-                        )
+                        );
                     }
                 }
                 Ok(CallFees { gas_price: max_fee, max_priority_fee_per_gas })
